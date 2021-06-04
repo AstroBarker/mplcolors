@@ -8,7 +8,7 @@ with [ANSI escape sequences](https://stackoverflow.com/questions/4842424/list-of
 This requires a [terminal with true color support](https://gist.github.com/XVilka/8346728).
 Notably, Mac's Terminal.app does not have this and so the colors cannot be properly displayed.
 I'm not sure that that is a workaround for this. 
-On Mac I suggest switching to a different terminal emulator with more modern support with as [kitty](https://sw.kovidgoyal.net/kitty/) or [iTerm](https://iterm2.com/).
+On Mac I suggest switching to a different terminal emulator with more modern support such as [kitty](https://sw.kovidgoyal.net/kitty/) or [iTerm](https://iterm2.com/).
 
 # Requirements
 You just need a Python distribution with matplotlib.
