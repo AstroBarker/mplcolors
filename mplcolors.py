@@ -7,7 +7,15 @@ https://matplotlib.org/stable/gallery/color/named_colors.html
 for getting color names and values.
 '''
 
+import argparse 
+from collections import OrderedDict
+from os import get_terminal_size
+
+import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import matplotlib as mpl
+from matplotlib import cm
+
 
 def FormatRGB( rgb ):
     """
@@ -19,7 +27,7 @@ def FormatRGB( rgb ):
     rgb = [ round(i*100) for i in rgb  ]
 
     # ANSI escape sequence mess
-    return "\033[48;2;" + str(rgb[0]) + ";" + str(rgb[1]) + ";" + str(rgb[2]) + "m"
+    return "\x1b[48;2;" + str(rgb[0]) + ";" + str(rgb[1]) + ";" + str(rgb[2]) + "m"
 
 
 def PrintColor( rgb, name, endline ):
@@ -31,11 +39,14 @@ def PrintColor( rgb, name, endline ):
     # Set the length of an entry as 25 spaces
     num_spaces = 25 - 5 - len(name)
     print( FormatRGB( mcolors.to_rgb(name) ) + "      " 
-           + "\033[0;0m", name, num_spaces*" ", end=endline )
+           + "\x1b[0;0m", name, num_spaces*" ", end=endline )
 
 
 
-def main():
+def PrintColors():
+    """
+    Print the standard matplotlib colors to screen.
+    """
 
     by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
                          name)
@@ -59,6 +70,126 @@ def main():
             PrintColor( mcolors.to_rgb(name), name, " "  )
 
 
-if __name__ == "__main__":
+def GetColormap( name ):
+    """
+    Load a colormap into a useable object.
+    Easy to do with e.g., cm.Blues but we only have a string
 
-    main()
+    Create a scalarMap object that can return rgb values with 
+    scalarMap.to_rgba(0...255)
+    """
+
+    norm = mpl.colors.Normalize(vmin=0.0, vmax=256)
+    scalarMap = cm.ScalarMappable(norm=norm, cmap=name)
+
+    return scalarMap
+
+
+def GetStep( cols ):
+    """
+    Given the size of the terminal window, 
+    set the striding for printing colors
+    """
+
+    step = 5
+    if ( cols > 55 ):
+        step = 5
+    if ( cols > 69 ):
+        step = 4
+    if ( cols > 91 ):
+        step = 3
+    if ( cols > 136 ):
+        step = 2 
+
+    return step
+
+def PrintColorbar( name ):
+    """
+    Print a single colorbar
+    """
+
+    scalarMap = GetColormap( name )
+
+    n = 17 # length for text
+    print( (n-len(name))*" " + name, end = " " )
+
+    # get the length of the terminal window.
+    # used for adjusting amount of colors printed
+    cols   = get_terminal_size().columns
+
+    step = GetStep( cols )
+
+    # Print every 5th color. The colorbar is massive if we print all 256
+    for i in range(0, 256, step):
+        print( FormatRGB(scalarMap.to_rgba(i)[:-1]) + " " + "\033[0;0m",end=""  )
+    print("\n")
+
+    
+def PrintColorbars( cmaps ):
+    """
+    Print a set of colorbars from dictionary cmap
+    """
+
+    for cmap_category, cmap_list in cmaps.items():
+
+        cols = get_terminal_size().columns 
+        size = int( (256 + 17) / GetStep( cols ) - 1 ) 
+        
+        title = " = " + cmap_category + " = "
+        print( str( (len(title)+1)*"=" ).center(size ) )
+        print(title.center(size))
+        print( str( (len(title)+1)*"=" ).center(size ) )
+        print("\n")
+        for cmap in cmap_list:
+            PrintColorbar( cmap )
+
+def main( args ):
+    
+    if ( args.colorbars == False ):
+        PrintColors()
+    else:
+        cmaps = OrderedDict()
+
+        # Help us organize the colormaps
+
+        cmaps['Perceptually Uniform Sequential'] = [
+            'viridis', 'plasma', 'inferno', 'magma', 'cividis']
+
+        cmaps['Sequential'] = [
+            'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+            'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+            'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']
+
+        cmaps['Sequential2'] = [
+            'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',
+            'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia',
+            'hot', 'afmhot', 'gist_heat', 'copper']
+
+        cmaps['Diverging'] = [
+            'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdBu',
+            'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic']
+
+        cmaps['Cyclic'] = ['twilight', 'twilight_shifted', 'hsv']
+
+        cmaps['Qualitative'] = ['Pastel1', 'Pastel2', 'Paired', 'Accent',
+                        'Dark2', 'Set1', 'Set2', 'Set3',
+                        'tab10', 'tab20', 'tab20b', 'tab20c']
+
+        cmaps['Miscellaneous'] = [
+            'flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern',
+            'gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg',
+            'gist_rainbow', 'rainbow', 'jet', 'turbo', 'nipy_spectral',
+            'gist_ncar']
+        
+        PrintColorbars(cmaps)
+    return 0
+if __name__ == "__main__":
+    
+    # parse any args
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-b", "--colorbars", action="store_true",
+                    help="display colorbars")
+
+    args = parser.parse_args()
+
+    main( args  )
