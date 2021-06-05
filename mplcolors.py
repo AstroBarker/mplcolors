@@ -24,7 +24,7 @@ def FormatRGB( rgb ):
     Output is a string with ANSI escape sequences.
     """
 
-    rgb = [ round(i*100) for i in rgb  ]
+    rgb = [ round(i*255) for i in rgb  ]
 
     # ANSI escape sequence mess
     return "\x1b[48;2;" + str(rgb[0]) + ";" + str(rgb[1]) + ";" + str(rgb[2]) + "m"

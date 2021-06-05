@@ -5,8 +5,7 @@ This uses [matplotlib.colors](https://matplotlib.org/stable/api/colors_api.html)
 with [ANSI escape sequences](https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences).
 
 It can also print all of the built-in colorbars.
-**Note**: The printed colors are slightly dimmer/duller than the proper colors due to how they're displayed.
-I'll look into how to fix this, but this should only be used as a quick reminder.
+
 # Compatability
 This requires a [terminal with true color support](https://gist.github.com/XVilka/8346728).
 Notably, Mac's Terminal.app does not have this and so the colors cannot be properly displayed.
