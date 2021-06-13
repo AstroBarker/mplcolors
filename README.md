@@ -30,6 +30,8 @@ to print the colors.
 
 ![Screenshot showing the script in use](screenshot.png)
 
+You may display all of the available [xkcd colors](https://xkcd.com/color/rgb/) by passing the option `-a` or flag `--all`.
+
 To display all of the built-in colormaps, use the `-b` flag ("b" for "bars") or the `--colorbars` option
 
 ```shell
