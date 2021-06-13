@@ -43,14 +43,14 @@ def PrintColor( rgb, name, endline ):
 
 
 
-def PrintColors():
+def PrintColors( colors=mcolors.CSS4_COLORS ):
     """
     Print the standard matplotlib colors to screen.
     """
 
     by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
                          name)
-                        for name, color in mcolors.CSS4_COLORS.items())
+                        for name, color in colors.items())
     names = [name for hsv, name in by_hsv]
 
     n     = len( names  )
@@ -145,8 +145,10 @@ def PrintColorbars( cmaps ):
 
 def main( args ):
     
-    if ( args.colorbars == False ):
+    if ( args.colorbars == False and args.all == False ):
         PrintColors()
+    elif ( args.colorbars == False and args.all == True ):
+        PrintColors( colors=mcolors.XKCD_COLORS )
     else:
         cmaps = OrderedDict()
 
@@ -189,6 +191,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-b", "--colorbars", action="store_true",
                     help="display colorbars")
+    parser.add_argument( "-a", "--all", action="store_true", help="Print all xkcd colors" )
 
     args = parser.parse_args()
 
