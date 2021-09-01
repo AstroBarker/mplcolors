@@ -37,7 +37,7 @@ def PrintColor( rgb, name, endline ):
     """
 
     # Set the length of an entry as 25 spaces
-    num_spaces = 25 - 5 - len(name)
+    num_spaces = 31 - 5 - len(name)
     print( FormatRGB( mcolors.to_rgb(name) ) + "      " 
            + "\x1b[0;0m", name, num_spaces*" ", end=endline )
 
@@ -47,7 +47,7 @@ def PrintColors( colors=mcolors.CSS4_COLORS ):
     """
     Print the standard matplotlib colors to screen.
     """
-
+    
     by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
                          name)
                         for name, color in colors.items())
@@ -148,7 +148,11 @@ def main( args ):
     if ( args.colorbars == False and args.all == False ):
         PrintColors()
     elif ( args.colorbars == False and args.all == True ):
-        PrintColors( colors=mcolors.XKCD_COLORS )
+        color_dict = mcolors.XKCD_COLORS
+        # Remove "xkcd:blue with a hint of purple" because it is (almost) 
+        # the same as "xkcd:blurple" and that name is too damn long.
+        color_dict.pop("xkcd:blue with a hint of purple")
+        PrintColors( colors=color_dict )
     else:
         cmaps = OrderedDict()
 
