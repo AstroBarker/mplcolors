@@ -10,6 +10,7 @@ for getting color names and values.
 import argparse 
 from collections import OrderedDict
 from os import get_terminal_size
+import difflib
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
@@ -41,16 +42,17 @@ def PrintColor( rgb, name, endline ):
     print( FormatRGB( mcolors.to_rgb(name) ) + "      " 
            + "\x1b[0;0m", name, num_spaces*" ", end=endline )
 
-
+def getSortedHsvColors( colors ):
+    return sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
+                         name)
+                        for name, color in colors.items())
 
 def PrintColors( colors=mcolors.CSS4_COLORS ):
     """
     Print the standard matplotlib colors to screen.
     """
     
-    by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
-                         name)
-                        for name, color in colors.items())
+    by_hsv = getSortedHsvColors(colors)
     names = [name for hsv, name in by_hsv]
 
     n     = len( names  )
@@ -69,6 +71,52 @@ def PrintColors( colors=mcolors.CSS4_COLORS ):
         else:
             PrintColor( mcolors.to_rgb(name), name, " "  )
 
+
+def getDecoString(s):
+    s = " = " + s + " = "
+    size = get_terminal_size().columns
+    
+    line = str((len(s)+1) * "=").center(size)
+    
+    return line + "\n" + s.center(size) + "\n" + line + "\n"
+
+def getNearNameColors( target, colors, least_score = 0.5 ):
+    """get near name colors based on difflib.SequenceMatcher.
+
+    Args:
+        target (str): the color name to search
+        colors (dict[str, str]): search space to search
+
+    Returns:
+        dict[str, str]: the result
+    """
+    near_name_colors = {}
+    for name, color in colors.items():
+        diff = difflib.SequenceMatcher(None, target, name).ratio()
+        if diff > least_score:
+            near_name_colors[name] = color
+    
+    return near_name_colors
+
+def searchColors( target, colors = mcolors.CSS4_COLORS ):
+    match_colors = {
+        name: color for name, color in colors.items() if target in name
+    }
+    
+    message = f"RESULT (target = {target})"
+    print( getDecoString( message ) )
+    
+    if not match_colors:
+        message = "!! No color name hit. Try another color name. !!"
+        print(getDecoString( message ))
+        
+        suggestions = getNearNameColors(target, colors)
+        if suggestions:
+            print("Maybe...")
+            PrintColors( suggestions )
+
+    else:
+        PrintColors( match_colors )
 
 def GetColormap( name ):
     """
@@ -145,7 +193,17 @@ def PrintColorbars( cmaps ):
 
 def main( args ):
     
-    if ( args.colorbars == False and args.all == False ):
+    if ( args.colorbars == False and args.search ):
+        colors = mcolors.CSS4_COLORS
+        if args.all:
+            colors = mcolors.XKCD_COLORS
+            # Remove "xkcd:blue with a hint of purple" because it is (almost) 
+            # the same as "xkcd:blurple" and that name is too damn long.
+            colors.pop("xkcd:blue with a hint of purple")
+
+        searchColors( args.search, colors=colors)
+    
+    elif ( args.colorbars == False and args.all == False ):
         PrintColors()
     elif ( args.colorbars == False and args.all == True ):
         color_dict = mcolors.XKCD_COLORS
@@ -196,6 +254,7 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--colorbars", action="store_true",
                     help="display colorbars")
     parser.add_argument( "-a", "--all", action="store_true", help="Print all xkcd colors" )
+    parser.add_argument("-s", "--search", help="The color name you want to look up.", default=None)
 
     args = parser.parse_args()
 
