@@ -5,13 +5,6 @@ Print matplotlib colors to standard output.
 Some inspiration taken from Matplotlib documentation 
 https://matplotlib.org/stable/gallery/color/named_colors.html
 for getting color names and values.
-
-Utility Functions:
-FormatRGB - prep RGB plotting string
-PrintColor - print RGB string
-getSortedHsvColors
-
-
 '''
 
 import argparse 
@@ -24,6 +17,7 @@ import matplotlib.colors as mcolors
 import matplotlib as mpl
 from matplotlib import cm
 
+# === Color Print Routines ===
 
 def FormatRGB( rgb ):
     """
@@ -36,7 +30,6 @@ def FormatRGB( rgb ):
 
     # ANSI escape sequence mess
     return "\x1b[48;2;" + str(rgb[0]) + ";" + str(rgb[1]) + ";" + str(rgb[2]) + "m"
-
 
 def PrintColor( rgb, name, endline ):
     """
@@ -66,6 +59,72 @@ def PrintComplement( name ):
     PrintColor( rgb_c, name, "\n" )
 
 
+def getSortedHsvColors( colors ):
+    return sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
+                         name)
+                        for name, color in colors.items())
+
+
+def PrintColors( colors=mcolors.CSS4_COLORS ):
+    """
+    Print the standard matplotlib colors to screen.
+    """
+    
+    by_hsv = getSortedHsvColors(colors)
+    names  = [name for hsv, name in by_hsv]
+
+    n      = len( names  )
+
+    # NOTE: You may edit the number of printed columns here
+    ncols = 3
+    nrows = n // ncols + int( n % ncols > 0 )
+
+    for i, name in enumerate(names):
+        col = i % ncols
+
+        # print color.
+        # If we're at the end of a row, send in a newline.
+        if ( col == ncols - 1 ):
+            PrintColor( mcolors.to_rgb(name), name, "\n"  )
+        else:
+            PrintColor( mcolors.to_rgb(name), name, " "  )
+
+# === Colorbar Routines === 
+
+def GetColormap( name ):
+    """
+    Load a colormap into a useable object.
+    Easy to do with e.g., cm.Blues but we only have a string
+
+    Create a scalarMap object that can return rgb values with 
+    scalarMap.to_rgba(0...255)
+    """
+
+    norm = mpl.colors.Normalize(vmin=0.0, vmax=256)
+    scalarMap = cm.ScalarMappable(norm=norm, cmap=name)
+
+    return scalarMap
+
+
+def GetStep( cols ):
+    """
+    Given the size of the terminal window, 
+    set the striding for printing colors
+    """
+
+    step = 5
+    if ( cols > 55 ):
+        step = 5
+    if ( cols > 69 ):
+        step = 4
+    if ( cols > 91 ):
+        step = 3
+    if ( cols > 136 ):
+        step = 2 
+
+    return step
+
+
 def PrintColorbar( name ):
     """
     Print a single colorbar
@@ -88,33 +147,28 @@ def PrintColorbar( name ):
     print("\n")
 
 
-def getSortedHsvColors( colors ):
-    return sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
-                         name)
-                        for name, color in colors.items())
+def PrintColorbars( cmaps ):
+    """
+    Print a set of colorbars from dictionary cmap
+    """
+
+    for cmap_category, cmap_list in cmaps.items():
+
+        cols = get_terminal_size().columns 
+        size = int( (256 + 17) / GetStep( cols ) - 1 ) 
+        
+        title = " = " + cmap_category + " = "
+        print( str( (len(title)+1)*"=" ).center(size ) )
+        print(title.center(size))
+        print( str( (len(title)+1)*"=" ).center(size ) )
+        print("\n")
+        for cmap in cmap_list:
+            PrintColorbar( cmap )
+
+# === Complement Color Functions ===
 
 # Following functions for computing complement colors
 # Based on https://stackoverflow.com/questions/40233986/python-is-there-a-function-or-formula-to-find-the-complementary-colour-of-a-rgb
-def HexToRGB( h ): # Unused Currently.
-    """
-    Convert Hex to RGB.
-    Parameters: h : string -- includes the #, or not.
-    returns: tuple(r,g,b)
-    """
-    if ( h[0] != "#" ):
-        h = "#" + h
-    return mpl.colors.to_rgb(h)
-
-
-def RGBToHex(rgb):
-    """
-    Convert RGB to Hex
-    Parameter: rgb : tuple
-    returns hex: string, inclding "#"
-    """
-    return mpl.colors.to_hex(rgb)
-
-
 def hilo(a, b, c):
     """
     min + max of (a, b, c)
@@ -138,31 +192,7 @@ def Complement(r, g, b):
     k = hilo(r, g, b)
     return tuple(k - u for u in (r, g, b))
 
-
-def PrintColors( colors=mcolors.CSS4_COLORS ):
-    """
-    Print the standard matplotlib colors to screen.
-    """
-    
-    by_hsv = getSortedHsvColors(colors)
-    names = [name for hsv, name in by_hsv]
-
-    n     = len( names  )
-
-    # NOTE: You may edit the number of printed columns here
-    ncols = 3
-    nrows = n // ncols + int( n % ncols > 0 )
-
-    for i, name in enumerate(names):
-        col = i % ncols
-
-        # print color.
-        # If we're at the end of a row, send in a newline.
-        if ( col == ncols - 1 ):
-            PrintColor( mcolors.to_rgb(name), name, "\n"  )
-        else:
-            PrintColor( mcolors.to_rgb(name), name, " "  )
-
+# === Search Routines ===
 
 def getDecoString(s):
     s = " = " + s + " = "
@@ -213,57 +243,26 @@ def searchColors( target, colors = mcolors.CSS4_COLORS ):
         PrintColors( match_colors )
 
 
-def GetColormap( name ):
+# === Conversion Routines ===
+
+def HexToRGB( h ): # Unused Currently.
     """
-    Load a colormap into a useable object.
-    Easy to do with e.g., cm.Blues but we only have a string
-
-    Create a scalarMap object that can return rgb values with 
-    scalarMap.to_rgba(0...255)
+    Convert Hex to RGB.
+    Parameters: h : string -- includes the #, or not.
+    returns: tuple(r,g,b)
     """
-
-    norm = mpl.colors.Normalize(vmin=0.0, vmax=256)
-    scalarMap = cm.ScalarMappable(norm=norm, cmap=name)
-
-    return scalarMap
+    if ( h[0] != "#" ):
+        h = "#" + h
+    return mpl.colors.to_rgb(h)
 
 
-def GetStep( cols ):
+def RGBToHex(rgb):
     """
-    Given the size of the terminal window, 
-    set the striding for printing colors
+    Convert RGB to Hex
+    Parameter: rgb : tuple
+    returns hex: string, inclding "#"
     """
-
-    step = 5
-    if ( cols > 55 ):
-        step = 5
-    if ( cols > 69 ):
-        step = 4
-    if ( cols > 91 ):
-        step = 3
-    if ( cols > 136 ):
-        step = 2 
-
-    return step
-
-    
-def PrintColorbars( cmaps ):
-    """
-    Print a set of colorbars from dictionary cmap
-    """
-
-    for cmap_category, cmap_list in cmaps.items():
-
-        cols = get_terminal_size().columns 
-        size = int( (256 + 17) / GetStep( cols ) - 1 ) 
-        
-        title = " = " + cmap_category + " = "
-        print( str( (len(title)+1)*"=" ).center(size ) )
-        print(title.center(size))
-        print( str( (len(title)+1)*"=" ).center(size ) )
-        print("\n")
-        for cmap in cmap_list:
-            PrintColorbar( cmap )
+    return mpl.colors.to_hex(rgb)
 
 
 def main( args ):
