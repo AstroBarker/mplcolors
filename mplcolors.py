@@ -7,6 +7,8 @@ https://matplotlib.org/stable/gallery/color/named_colors.html
 for getting color names and values.
 '''
 
+VERSION = "1.0.0"
+
 import argparse 
 from collections import OrderedDict
 from os import get_terminal_size
@@ -20,322 +22,347 @@ from matplotlib import cm
 # === Color Print Routines ===
 
 def FormatRGB( rgb ):
-    """
-    Take output of mpl.colors.to_rgb and format for use in print.
-    input is (r, g, b) in decimal form (e.g., values range from 0.0 to 1.0)
-    Output is a string with ANSI escape sequences.
-    """
+	"""
+	Take output of mpl.colors.to_rgb and format for use in print.
+	input is (r, g, b) in decimal form (e.g., values range from 0.0 to 1.0)
+	Output is a string with ANSI escape sequences.
+	"""
 
-    rgb = [ round(i*255) for i in rgb  ]
+	rgb = [ round(i*255) for i in rgb  ]
 
-    # ANSI escape sequence mess
-    return "\x1b[48;2;" + str(rgb[0]) + ";" + str(rgb[1]) + ";" + str(rgb[2]) + "m"
+	# ANSI escape sequence mess
+	outstr = "\x1b[48;2;" + str(rgb[0]) + ";" \
+				 + str(rgb[1]) + ";" + str(rgb[2]) + "m"
+	return outstr
 
 def PrintColor( rgb, name, endline ):
-    """
-    Print output for a single color (rbg, name).
-    endline is a control to send a newline character
-    """
+	"""
+	Print output for a single color (rbg, name).
+	endline is a control to send a newline character
+	"""
 
-    # Set the length of an entry as 25 spaces
-    num_spaces = 31 - 5 - len(name)
-    print( FormatRGB( rgb ) + "      " 
-           + "\x1b[0;0m", name, num_spaces*" ", end=endline )
+	# Set the length of an entry as 25 spaces
+	num_spaces = 31 - 5 - len(name)
+	print( FormatRGB( rgb ) + "      " 
+			 + "\x1b[0;0m", name, num_spaces*" ", end=endline )
 
 
 def PrintComplement( name ):
-    if ( name[0] == "#" or name[0].isnumeric() ):
-        name = "#" + name
-        rgb = HexToRGB( name )
-    else:
-        rgb   = mcolors.to_rgb(name)
-    rgb_c = Complement( *rgb )
+	"""
+	Compute and print complement colors to "name"
+	Parameters: 
+		name - string. Either mpl color or hex string.
+	"""
+	if ( name[0] == "#" or name[0].isnumeric() ):
+		name = "#" + name
+		rgb = HexToRGB( name )
+	else:
+		rgb   = mcolors.to_rgb(name)
+	rgb_c = Complement( *rgb )
 
-    message = "Finding RGB Complement of " + name
-    print(getDecoString( message ))
+	message = "Finding RGB Complement of " + name
+	print(GetDecoString( message ))
 
-    PrintColor( rgb, name, "\n" )
-    name = "Complement: " + str( RGBToHex(rgb_c) )
-    PrintColor( rgb_c, name, "\n" )
+	PrintColor( rgb, name, "\n" )
+	name = "Complement: " + str( RGBToHex(rgb_c) )
+	PrintColor( rgb_c, name, "\n" )
 
 
-def getSortedHsvColors( colors ):
-    return sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
-                         name)
-                        for name, color in colors.items())
+def GetSortedHsvColors( colors ):
+	return sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
+						 name) for name, color in colors.items())
 
 
 def PrintColors( colors=mcolors.CSS4_COLORS ):
-    """
-    Print the standard matplotlib colors to screen.
-    """
-    
-    by_hsv = getSortedHsvColors(colors)
-    names  = [name for hsv, name in by_hsv]
+	"""
+	Print the standard matplotlib colors to screen.
+	"""
+	
+	by_hsv = GetSortedHsvColors(colors)
+	names  = [name for hsv, name in by_hsv]
 
-    n      = len( names  )
+	n      = len( names  )
 
-    # NOTE: You may edit the number of printed columns here
-    ncols = 3
-    nrows = n // ncols + int( n % ncols > 0 )
+	# NOTE: You may edit the number of printed columns here
+	ncols = 3
+	nrows = n // ncols + int( n % ncols > 0 )
 
-    for i, name in enumerate(names):
-        col = i % ncols
+	for i, name in enumerate(names):
+		col = i % ncols
 
-        # print color.
-        # If we're at the end of a row, send in a newline.
-        if ( col == ncols - 1 ):
-            PrintColor( mcolors.to_rgb(name), name, "\n"  )
-        else:
-            PrintColor( mcolors.to_rgb(name), name, " "  )
+		# print color.
+		# If we're at the end of a row, send in a newline.
+		if ( col == ncols - 1 ):
+			PrintColor( mcolors.to_rgb(name), name, "\n"  )
+		else:
+			PrintColor( mcolors.to_rgb(name), name, " "  )
 
 # === Colorbar Routines === 
 
 def GetColormap( name ):
-    """
-    Load a colormap into a useable object.
-    Easy to do with e.g., cm.Blues but we only have a string
+	"""
+	Load a colormap into a useable object.
+	Easy to do with e.g., cm.Blues but we only have a string
 
-    Create a scalarMap object that can return rgb values with 
-    scalarMap.to_rgba(0...255)
-    """
+	Create a scalarMap object that can return rgb values with 
+	scalarMap.to_rgba(0...255)
+	"""
 
-    norm = mpl.colors.Normalize(vmin=0.0, vmax=256)
-    scalarMap = cm.ScalarMappable(norm=norm, cmap=name)
+	norm = mpl.colors.Normalize(vmin=0.0, vmax=256)
+	scalarMap = cm.ScalarMappable(norm=norm, cmap=name)
 
-    return scalarMap
+	return scalarMap
 
 
 def GetStep( cols ):
-    """
-    Given the size of the terminal window, 
-    set the striding for printing colors
-    """
+	"""
+	Given the size of the terminal window, 
+	set the striding for printing colors.
+	Hacky.
+	"""
 
-    step = 5
-    if ( cols > 55 ):
-        step = 5
-    if ( cols > 69 ):
-        step = 4
-    if ( cols > 91 ):
-        step = 3
-    if ( cols > 136 ):
-        step = 2 
+	step = 5
+	if ( cols > 55 ): step = 5
+	if ( cols > 69 ): step = 4
+	if ( cols > 91 ): step = 3
+	if ( cols > 136 ): step = 2 
 
-    return step
+	return step
 
 
 def PrintColorbar( name ):
-    """
-    Print a single colorbar
-    """
+	"""
+	Print a single colorbar
+	"""
 
-    scalarMap = GetColormap( name )
+	scalarMap = GetColormap( name )
 
-    n = 17 # length for text
-    print( (n-len(name))*" " + name, end = " " )
+	n = 17 # length for text
+	print( (n-len(name))*" " + name, end = " " )
 
-    # get the length of the terminal window.
-    # used for adjusting amount of colors printed
-    cols = get_terminal_size().columns
+	# get the length of the terminal window.
+	# used for adjusting amount of colors printed
+	cols = get_terminal_size().columns
 
-    step = GetStep( cols )
+	step = GetStep( cols )
 
-    # Print every nth color. The colorbar is massive if we print all 256
-    for i in range(0, 256, step):
-        print( FormatRGB(scalarMap.to_rgba(i)[:-1]) + " " + "\033[0;0m",end=""  )
-    print("\n")
+	# Print every nth color. The colorbar is massive if we print all 256
+	for i in range(0, 256, step):
+		print( FormatRGB(scalarMap.to_rgba(i)[:-1]) + " " + "\033[0;0m",end=""  )
+	print("\n")
 
 
 def PrintColorbars( cmaps ):
-    """
-    Print a set of colorbars from dictionary cmap
-    """
+	"""
+	Print a set of colorbars from dictionary cmap
+	"""
 
-    for cmap_category, cmap_list in cmaps.items():
+	for cmap_category, cmap_list in cmaps.items():
 
-        cols = get_terminal_size().columns 
-        size = int( (256 + 17) / GetStep( cols ) - 1 ) 
-        
-        title = " = " + cmap_category + " = "
-        print( str( (len(title)+1)*"=" ).center(size ) )
-        print(title.center(size))
-        print( str( (len(title)+1)*"=" ).center(size ) )
-        print("\n")
-        for cmap in cmap_list:
-            PrintColorbar( cmap )
+		cols = get_terminal_size().columns 
+		size = int( (256 + 17) / GetStep( cols ) - 1 ) 
+		
+		title = " = " + cmap_category + " = "
+		print( str( (len(title)+1)*"=" ).center(size ) )
+		print(title.center(size))
+		print( str( (len(title)+1)*"=" ).center(size ) )
+		print("\n")
+		for cmap in cmap_list:
+			PrintColorbar( cmap )
 
 # === Complement Color Functions ===
 
 # Following functions for computing complement colors
 # Based on https://stackoverflow.com/questions/40233986/python-is-there-a-function-or-formula-to-find-the-complementary-colour-of-a-rgb
 def hilo(a, b, c):
-    """
-    min + max of (a, b, c)
-    """
+	"""
+	min + max of (a, b, c)
+	"""
  
-    minval = min( min(a, b), c )
-    maxval = max( max(a, b), c )
-    return minval + maxval
+	minval = min( min(a, b), c )
+	maxval = max( max(a, b), c )
+	return minval + maxval
 
 
 def Complement(r, g, b):
-    """
-    Given (r, g, b) compute the complement color.
-    Note: this is based on RGB color theory. For example, 
-    Red and green are not complements in this theory.
-    Maybe good, maybe bad, but color theory is hard 
-    (and having colorblind-unfriendly complements is bad in my opinion).
+	"""
+	Given (r, g, b) compute the complement color.
+	Note: this is based on RGB color theory. For example, 
+	Red and green are not complements in this theory.
+	Maybe good, maybe bad, but color theory is hard 
+	(and having colorblind-unfriendly complements is bad in my opinion).
 
-    returns: tuple(r,g,b)
-    """
-    k = hilo(r, g, b)
-    return tuple(k - u for u in (r, g, b))
+	returns: tuple(r,g,b)
+	"""
+	k = hilo(r, g, b)
+	return tuple(k - u for u in (r, g, b))
 
 # === Search Routines ===
 
-def getDecoString(s):
-    s = " = " + s + " = "
-    size = get_terminal_size().columns
-    
-    line = str((len(s)+1) * "=").center(size)
-    
-    return line + "\n" + s.center(size) + "\n" + line + "\n"
+def GetDecoString(s):
+	"""
+	Decorative string, mainly for search functions.
+	"""
+	s = " = " + s + " = "
+	size = get_terminal_size().columns
+	
+	line = str((len(s)+1) * "=").center(size)
+	
+	return line + "\n" + s.center(size) + "\n" + line + "\n"
 
 
-def getNearNameColors( target, colors, least_score = 0.5 ):
-    """get near name colors based on difflib.SequenceMatcher.
+def GetNearNameColors( target, colors, least_score = 0.05 ):
+	"""
+	Get near name colors based on difflib.SequenceMatcher.
 
-    Args:
-        target (str): the color name to search
-        colors (dict[str, str]): search space to search
+	Parameters:
+		target (str): the color name to search
+		colors (dict[str, str]): search space to search
 
-    Returns:
-        dict[str, str]: the result
-    """
-    near_name_colors = {}
-    for name, color in colors.items():
-        diff = difflib.SequenceMatcher(None, target, name).ratio()
-        if diff > least_score:
-            near_name_colors[name] = color
-    
-    return near_name_colors
+	Returns:
+		dict[str, str]: the result
+	"""
+	
+	near_name_colors = {}
+	for name, color in colors.items():
+		diff = difflib.SequenceMatcher(None, target, name).ratio()
+		
+		if diff > least_score:
+			near_name_colors[name] = color
+	
+	return near_name_colors
 
 
-def searchColors( target, colors = mcolors.CSS4_COLORS ):
-    match_colors = {
-        name: color for name, color in colors.items() if target in name
-    }
-    
-    message = f"RESULT (target = {target})"
-    print( getDecoString( message ) )
-    
-    if not match_colors:
-        message = "!! No color name hit. Try another color name. !!"
-        print(getDecoString( message ))
-        
-        suggestions = getNearNameColors(target, colors)
-        if suggestions:
-            print("Maybe...")
-            PrintColors( suggestions )
+def SearchColors( target, colors = mcolors.CSS4_COLORS ):
+	"""
+	Search mpl colors for target.
+	"""
+	match_colors = {
+		name: color for name, color in colors.items() if target in name
+	}
+	
+	message = f"RESULT (target = {target})"
+	print( GetDecoString( message ) )
+	
+	if not match_colors:
+		message = "!! No color name hit. Try another color name. !!"
+		print(GetDecoString( message ))
+		
+		suggestions = GetNearNameColors(target, colors)
+		print(suggestions)
+		if suggestions:
+			print("Maybe...")
+			PrintColors( suggestions )
 
-    else:
-        PrintColors( match_colors )
+	else:
+		PrintColors( match_colors )
 
 
 # === Conversion Routines ===
 
 def HexToRGB( h ): # Unused Currently.
-    """
-    Convert Hex to RGB.
-    Parameters: h : string -- includes the #, or not.
-    returns: tuple(r,g,b)
-    """
-    if ( h[0] != "#" ):
-        h = "#" + h
-    return mpl.colors.to_rgb(h)
+	"""
+	Convert Hex to RGB.
+	Parameters: h : string -- includes the #, or not.
+	returns: tuple(r,g,b)
+	"""
+	if ( h[0] != "#" ):
+		h = "#" + h
+	return mpl.colors.to_rgb(h)
 
 
 def RGBToHex(rgb):
-    """
-    Convert RGB to Hex
-    Parameter: rgb : tuple
-    returns hex: string, inclding "#"
-    """
-    return mpl.colors.to_hex(rgb)
+	"""
+	Convert RGB to Hex
+	Parameter: rgb : tuple
+	returns hex: string, inclding "#"
+	"""
+	return mpl.colors.to_hex(rgb)
 
 
 def main( args ):
-    
-    if ( args.colorbars == False and args.search ):
-        colors = mcolors.CSS4_COLORS
-        if args.all:
-            colors = mcolors.XKCD_COLORS
-            # Remove "xkcd:blue with a hint of purple" because it is (almost) 
-            # the same as "xkcd:blurple" and that name is too damn long.
-            colors.pop("xkcd:blue with a hint of purple")
 
-        searchColors( args.search, colors=colors)
-    
-    elif ( args.colorbars == False and args.all == False and args.complement == None ):
-        PrintColors()
-    elif ( args.colorbars == False and args.all == True ):
-        color_dict = mcolors.XKCD_COLORS
-        # Remove "xkcd:blue with a hint of purple" because it is (almost) 
-        # the same as "xkcd:blurple" and that name is too damn long.
-        color_dict.pop("xkcd:blue with a hint of purple")
-        PrintColors( colors=color_dict )
-    elif ( args.complement != None ):
-        name = args.complement
-        PrintComplement( name )
-    else:
-        cmaps = OrderedDict()
+	if ( args.version ):
+		print( VERSION, "\n" )
+		return 0
+	
+	if ( args.colorbars == False and args.search ):
+		colors = mcolors.CSS4_COLORS
+		if args.all:
+			colors = mcolors.XKCD_COLORS
+			# Remove "xkcd:blue with a hint of purple" because it is (almost) 
+			# the same as "xkcd:blurple" and that name is too damn long.
+			colors.pop("xkcd:blue with a hint of purple")
 
-        # Help us organize the colormaps
+		SearchColors( args.search, colors=colors)
+	
+	elif ( args.colorbars == False and args.all == False and args.complement == None ):
+		PrintColors()
+	elif ( args.colorbars == False and args.all == True ):
+		color_dict = mcolors.XKCD_COLORS
+		# Remove "xkcd:blue with a hint of purple" because it is (almost) 
+		# the same as "xkcd:blurple" and that name is too damn long.
+		color_dict.pop("xkcd:blue with a hint of purple")
+		PrintColors( colors=color_dict )
+	elif ( args.complement != None ):
+		name = args.complement
+		PrintComplement( name )
+	else:
+		cmaps = OrderedDict()
 
-        cmaps['Perceptually Uniform Sequential'] = [
-            'viridis', 'plasma', 'inferno', 'magma', 'cividis']
+		# Help us organize the colormaps
 
-        cmaps['Sequential'] = [
-            'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
-            'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
-            'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']
+		cmaps['Perceptually Uniform Sequential'] = [
+			'viridis', 'plasma', 'inferno', 'magma', 'cividis']
 
-        cmaps['Sequential2'] = [
-            'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',
-            'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia',
-            'hot', 'afmhot', 'gist_heat', 'copper']
+		cmaps['Sequential'] = [
+			'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+			'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+			'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']
 
-        cmaps['Diverging'] = [
-            'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdBu',
-            'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic']
+		cmaps['Sequential2'] = [
+			'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',
+			'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia',
+			'hot', 'afmhot', 'gist_heat', 'copper']
 
-        cmaps['Cyclic'] = ['twilight', 'twilight_shifted', 'hsv']
+		cmaps['Diverging'] = [
+			'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdBu',
+			'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic']
 
-        cmaps['Qualitative'] = ['Pastel1', 'Pastel2', 'Paired', 'Accent',
-                        'Dark2', 'Set1', 'Set2', 'Set3',
-                        'tab10', 'tab20', 'tab20b', 'tab20c']
+		cmaps['Cyclic'] = ['twilight', 'twilight_shifted', 'hsv']
 
-        cmaps['Miscellaneous'] = [
-            'flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern',
-            'gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg',
-            'gist_rainbow', 'rainbow', 'jet', 'turbo', 'nipy_spectral',
-            'gist_ncar']
-        
-        PrintColorbars(cmaps)
-    return 0
+		cmaps['Qualitative'] = ['Pastel1', 'Pastel2', 'Paired', 'Accent',
+						'Dark2', 'Set1', 'Set2', 'Set3',
+						'tab10', 'tab20', 'tab20b', 'tab20c']
+
+		cmaps['Miscellaneous'] = [
+			'flag', 'prism', 'ocean', 'gist_earth', 'terrain', 'gist_stern',
+			'gnuplot', 'gnuplot2', 'CMRmap', 'cubehelix', 'brg',
+			'gist_rainbow', 'rainbow', 'jet', 'turbo', 'nipy_spectral',
+			'gist_ncar']
+		
+		PrintColorbars(cmaps)
+	return 0
 
 
 if __name__ == "__main__":
-    
-    # parse any args
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-b", "--colorbars", action="store_true",
-                    help="display colorbars")
-    parser.add_argument( "-a", "--all", action="store_true", help="Print all xkcd colors" )
-    parser.add_argument("-s", "--search", help="The color name you want to look up.", default=None)
-    parser.add_argument( "-c", "--complement", help="Return the RGB color complement. Input either matplotlib color name or Hex as string, e.g., violet.", default=None)
+	
+	# parse any args
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-b", "--colorbars", action="store_true",
+		help="display colorbars")
+	parser.add_argument( "-a", "--all", action="store_true", 
+		help="Print all xkcd colors" )
+	parser.add_argument("-s", "--search", help="The color name you want to look up.", 
+		default=None)
+	parser.add_argument( "-c", "--complement", 
+		help="Return the RGB color complement. \
+		Input either matplotlib color name or Hex as string, e.g., violet.", 
+		default=None)
 
-    args = parser.parse_args()
-    
-    main( args  )
+	parser.add_argument( "-v", "--version", help="Print version number.", 
+		action="store_true" )
+
+	args = parser.parse_args()
+	
+	main( args  )
