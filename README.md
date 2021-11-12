@@ -2,7 +2,9 @@
 Tired of searching "[matplotlib colors](https://duckduckgo.com/?q=matplotlib+colors&atb=v275-4&ia=web)" every week/day/hour?
 This simple script displays them all conveniently right in your terminal emulator!
 This uses [matplotlib.colors](https://matplotlib.org/stable/api/colors_api.html) to get color names and RGB values and prints 
-with [ANSI escape sequences](https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences). It can also search the `matplotlib` colors givne an input!
+with [ANSI escape sequences](https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences). 
+It can also search the `matplotlib` colors given an input!
+Finally, given a `matplotlib` color or hex value, `mplcolors` can return the RGB color complement.
 
 It can also print all of the built-in colorbars.
 
@@ -31,6 +33,15 @@ to print the colors.
 ![Screenshot showing the script in use](screenshot.png)
 
 You may display all of the available [xkcd colors](https://xkcd.com/color/rgb/) by passing the option `-a` or flag `--all`.
+
+To search for the RGB complement to a given color, use the `-c` or `--complement` flags followed by either a `matplotlib` color or hex.
+If using a hex value, the "#" can be given or withheld.
+
+```shell
+mplcolors -c "12ab84"
+```
+
+![Screenshot showing the complement](screenshot_complement.png)
 
 To search for colors containing a given string (e.g., "red"), then you can run: 
 ```shell
