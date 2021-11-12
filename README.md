@@ -1,9 +1,14 @@
 # mplcolors
+
+<p align="center">A command-line system information tool written in Python 3.x</p>
+
+<p align="center">
+<a href="./LICENSE.md"><img src="https://img.shields.io/badge/license-GPL-blue.svg"></a>
+</p>
+
 Tired of searching "[matplotlib colors](https://duckduckgo.com/?q=matplotlib+colors&atb=v275-4&ia=web)" every week/day/hour?
-This simple script displays them all conveniently right in your terminal emulator!
-This uses [matplotlib.colors](https://matplotlib.org/stable/api/colors_api.html) to get color names and RGB values and prints 
-with [ANSI escape sequences](https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences). 
-It can also search the `matplotlib` colors given an input!
+`mplcolors` is a command-line system information tool written in Python 3.x which can display `matplotlib` colors, colorbars, and has a few other useful functions.
+This uses [matplotlib.colors](https://matplotlib.org/stable/api/colors_api.html) to get color names and RGB values and prints with [ANSI escape sequences](https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences). 
 Finally, given a `matplotlib` color or hex value, `mplcolors` can return the RGB color complement.
 
 It can also print all of the built-in colorbars.
@@ -17,18 +22,26 @@ On Mac I suggest switching to a different terminal emulator with more modern sup
 # Requirements
 You just need a Python distribution with matplotlib and a true color compatible terminal emulator.
 
-# Useage
-It's probably easiest to create an alias in your shell's rc file (e.g., `~/.bashrc`) such as 
+# Installation
+There are two options for installing `mplcolors`. 
+1. Clone this repository `git clone https://github.com/AstroBarker/mplcolors.git`.
+2. Run `make install` inside the script directory.
+  * _MacOS_ `make PREFIX=/usr/local install`
+
+Alternatively, you may create an alias in your shell's rc file (e.g., `~/.bashrc`) such as 
 ```shell
 alias mplcolors='python /path/to/dir/mplcolors.py'
 ```
+although this will not install the `man` file.
 
-then you can just run 
+# Useage
+
+After installation, you may run
 ```shell
 mplcolors
 ```
 
-to print the colors.
+to print the default `matplotlib` colors.
 
 ![Screenshot showing the script in use](screenshot.png)
 
@@ -56,8 +69,4 @@ To display all of the built-in colormaps, use the `-b` flag ("b" for "bars") or 
 mplcolors -b
 ```
 
-![Screenshot showing colorbars.](screenshot_colorbars.png)
-
-# To Do
-Color lookup, color grouping.
-Print subset of colormaps
+![Screenshot showing colorbars.](screenshot_colorbars.png) 
