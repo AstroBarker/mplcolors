@@ -5,6 +5,13 @@ Print matplotlib colors to standard output.
 Some inspiration taken from Matplotlib documentation 
 https://matplotlib.org/stable/gallery/color/named_colors.html
 for getting color names and values.
+
+Utility Functions:
+FormatRGB - prep RGB plotting string
+PrintColor - print RGB string
+getSortedHsvColors
+
+
 '''
 
 import argparse 
@@ -39,13 +46,98 @@ def PrintColor( rgb, name, endline ):
 
     # Set the length of an entry as 25 spaces
     num_spaces = 31 - 5 - len(name)
-    print( FormatRGB( mcolors.to_rgb(name) ) + "      " 
+    print( FormatRGB( rgb ) + "      " 
            + "\x1b[0;0m", name, num_spaces*" ", end=endline )
+
+
+def PrintComplement( name ):
+    if ( name[0] == "#" or name[0].isnumeric() ):
+        name = "#" + name
+        rgb = HexToRGB( name )
+    else:
+        rgb   = mcolors.to_rgb(name)
+    rgb_c = Complement( *rgb )
+
+    message = "Finding RGB Complement of " + name
+    print(getDecoString( message ))
+
+    PrintColor( rgb, name, "\n" )
+    name = "Complement: " + str( RGBToHex(rgb_c) )
+    PrintColor( rgb_c, name, "\n" )
+
+
+def PrintColorbar( name ):
+    """
+    Print a single colorbar
+    """
+
+    scalarMap = GetColormap( name )
+
+    n = 17 # length for text
+    print( (n-len(name))*" " + name, end = " " )
+
+    # get the length of the terminal window.
+    # used for adjusting amount of colors printed
+    cols = get_terminal_size().columns
+
+    step = GetStep( cols )
+
+    # Print every nth color. The colorbar is massive if we print all 256
+    for i in range(0, 256, step):
+        print( FormatRGB(scalarMap.to_rgba(i)[:-1]) + " " + "\033[0;0m",end=""  )
+    print("\n")
+
 
 def getSortedHsvColors( colors ):
     return sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
                          name)
                         for name, color in colors.items())
+
+# Following functions for computing complement colors
+# Based on https://stackoverflow.com/questions/40233986/python-is-there-a-function-or-formula-to-find-the-complementary-colour-of-a-rgb
+def HexToRGB( h ): # Unused Currently.
+    """
+    Convert Hex to RGB.
+    Parameters: h : string -- includes the #, or not.
+    returns: tuple(r,g,b)
+    """
+    if ( h[0] != "#" ):
+        h = "#" + h
+    return mpl.colors.to_rgb(h)
+
+
+def RGBToHex(rgb):
+    """
+    Convert RGB to Hex
+    Parameter: rgb : tuple
+    returns hex: string, inclding "#"
+    """
+    return mpl.colors.to_hex(rgb)
+
+
+def hilo(a, b, c):
+    """
+    min + max of (a, b, c)
+    """
+ 
+    minval = min( min(a, b), c )
+    maxval = max( max(a, b), c )
+    return minval + maxval
+
+
+def Complement(r, g, b):
+    """
+    Given (r, g, b) compute the complement color.
+    Note: this is based on RGB color theory. For example, 
+    Red and green are not complements in this theory.
+    Maybe good, maybe bad, but color theory is hard 
+    (and having colorblind-unfriendly complements is bad in my opinion).
+
+    returns: tuple(r,g,b)
+    """
+    k = hilo(r, g, b)
+    return tuple(k - u for u in (r, g, b))
+
 
 def PrintColors( colors=mcolors.CSS4_COLORS ):
     """
@@ -80,6 +172,7 @@ def getDecoString(s):
     
     return line + "\n" + s.center(size) + "\n" + line + "\n"
 
+
 def getNearNameColors( target, colors, least_score = 0.5 ):
     """get near name colors based on difflib.SequenceMatcher.
 
@@ -97,6 +190,7 @@ def getNearNameColors( target, colors, least_score = 0.5 ):
             near_name_colors[name] = color
     
     return near_name_colors
+
 
 def searchColors( target, colors = mcolors.CSS4_COLORS ):
     match_colors = {
@@ -117,6 +211,7 @@ def searchColors( target, colors = mcolors.CSS4_COLORS ):
 
     else:
         PrintColors( match_colors )
+
 
 def GetColormap( name ):
     """
@@ -151,27 +246,6 @@ def GetStep( cols ):
 
     return step
 
-def PrintColorbar( name ):
-    """
-    Print a single colorbar
-    """
-
-    scalarMap = GetColormap( name )
-
-    n = 17 # length for text
-    print( (n-len(name))*" " + name, end = " " )
-
-    # get the length of the terminal window.
-    # used for adjusting amount of colors printed
-    cols   = get_terminal_size().columns
-
-    step = GetStep( cols )
-
-    # Print every 5th color. The colorbar is massive if we print all 256
-    for i in range(0, 256, step):
-        print( FormatRGB(scalarMap.to_rgba(i)[:-1]) + " " + "\033[0;0m",end=""  )
-    print("\n")
-
     
 def PrintColorbars( cmaps ):
     """
@@ -191,6 +265,7 @@ def PrintColorbars( cmaps ):
         for cmap in cmap_list:
             PrintColorbar( cmap )
 
+
 def main( args ):
     
     if ( args.colorbars == False and args.search ):
@@ -203,7 +278,7 @@ def main( args ):
 
         searchColors( args.search, colors=colors)
     
-    elif ( args.colorbars == False and args.all == False ):
+    elif ( args.colorbars == False and args.all == False and args.complement == None ):
         PrintColors()
     elif ( args.colorbars == False and args.all == True ):
         color_dict = mcolors.XKCD_COLORS
@@ -211,6 +286,9 @@ def main( args ):
         # the same as "xkcd:blurple" and that name is too damn long.
         color_dict.pop("xkcd:blue with a hint of purple")
         PrintColors( colors=color_dict )
+    elif ( args.complement != None ):
+        name = args.complement
+        PrintComplement( name )
     else:
         cmaps = OrderedDict()
 
@@ -247,6 +325,8 @@ def main( args ):
         
         PrintColorbars(cmaps)
     return 0
+
+
 if __name__ == "__main__":
     
     # parse any args
@@ -255,7 +335,8 @@ if __name__ == "__main__":
                     help="display colorbars")
     parser.add_argument( "-a", "--all", action="store_true", help="Print all xkcd colors" )
     parser.add_argument("-s", "--search", help="The color name you want to look up.", default=None)
+    parser.add_argument( "-c", "--complement", help="Return the RGB color complement. Input either matplotlib color name or Hex as string, e.g., violet.", default=None)
 
     args = parser.parse_args()
-
+    
     main( args  )
