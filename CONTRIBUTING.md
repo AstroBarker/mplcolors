@@ -14,3 +14,4 @@ The ideal mode for contributing is through pull requests.
 * If it is aestetically pleasing to align multiple declarations' at teh "=", please do so.
 * Include leading and trailing spaces in function calls (e.g., `Quadratic( x, a, b, c )`).
 * Use two empty lines between functions.
+* Use double quote "" for strings, single quotes are for chars.
