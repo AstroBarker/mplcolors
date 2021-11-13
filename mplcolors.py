@@ -179,7 +179,6 @@ def PrintColorbars( cmaps ):
 
 # === Complement Color Functions ===
 
-# Following functions for computing complement colors
 # Based on stackoverflow.com/
 #questions/40233986/python-is-there-a-function-or-formula-to-find-the-complementary-colour-of-a-rgb
 def hilo(a, b, c):
