@@ -13,6 +13,8 @@ Finally, given a `matplotlib` color or hex value, `mplcolors` can return the RGB
 
 It can also print all of the built-in colorbars.
 
+<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmatplotlib.org%2F2.1.1%2F_images%2Fsphx_glr_named_colors_001.png&f=1&nofb=1" alt="matplotlib colors" align="right" height="240px">
+
 # Compatability
 This requires a [terminal with true color support](https://gist.github.com/XVilka/8346728).
 Notably, Mac's Terminal.app does not have this and so the colors cannot be properly displayed.
@@ -46,8 +48,6 @@ mplcolors
 
 to print the default `matplotlib` colors.
 
-![Screenshot showing the script in use](screenshot.png)
-
 You may display all of the available [xkcd colors](https://xkcd.com/color/rgb/) by passing the option `-a` or flag `--all`.
 
 To search for the RGB complement to a given color, use the `-c` or `--complement` flags followed by either a `matplotlib` color or hex.
@@ -57,19 +57,13 @@ If using a hex value, the "#" can be given or withheld.
 mplcolors -c "12ab84"
 ```
 
-![Screenshot showing the complement](screenshot_complement.png)
-
 To search for colors containing a given string (e.g., "red"), then you can run: 
 ```shell
 mplcolors -s "red"
 ```
-
-![Screenshot showing the search](search_screenshot.png)
 
 To display all of the built-in colormaps, use the `-b` flag ("b" for "bars") or the `--colorbars` option
 
 ```shell
 mplcolors -b
 ```
-
-![Screenshot showing colorbars.](screenshot_colorbars.png) 
