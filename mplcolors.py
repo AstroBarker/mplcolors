@@ -218,7 +218,7 @@ def GetDecoString(message):
 	return line + "\n" + message.center(size) + "\n" + line + "\n"
 
 
-def GetNearNameColors( target, colors, least_score = 0.05 ):
+def GetNearNameColors( target, colors, least_score = 0.5 ):
 	"""
 	Get near name colors based on difflib.SequenceMatcher.
 
@@ -233,7 +233,6 @@ def GetNearNameColors( target, colors, least_score = 0.05 ):
 	near_name_colors = {}
 	for name, color in colors.items():
 		diff = difflib.SequenceMatcher(None, target, name).ratio()
-
 		if diff > least_score:
 			near_name_colors[name] = color
 
@@ -256,7 +255,6 @@ def SearchColors( target, colors = mcolors.CSS4_COLORS ):
 		print(GetDecoString( message ))
 
 		suggestions = GetNearNameColors(target, colors)
-		print(suggestions)
 		if suggestions:
 			print("Maybe...")
 			PrintColors( suggestions )
