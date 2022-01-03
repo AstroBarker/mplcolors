@@ -15,7 +15,7 @@ It can also print all of the built-in colorbars.
 
 <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmatplotlib.org%2F2.1.1%2F_images%2Fsphx_glr_named_colors_001.png&f=1&nofb=1" alt="matplotlib colors" align="right" height="240px">
 
-# Compatability
+# Compatibility
 This requires a [terminal with true color support](https://gist.github.com/XVilka/8346728).
 Notably, Mac's Terminal.app does not have this and so the colors cannot be properly displayed.
 I'm not sure that that is a workaround for this. 
@@ -39,7 +39,7 @@ alias mplcolors='python /path/to/dir/mplcolors.py'
 ```
 although this will not install the `man` file.
 
-# Useage
+# Usage
 
 After installation, you may run
 ```shell
