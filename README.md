@@ -31,7 +31,11 @@ You just need a Python distribution (3.x) with matplotlib and a true color compa
   * __MacOS__ `make PREFIX=/usr/local install`
 
 ## OS Packages
-None, yet!
+`mplcolors` is hosted on the Arch User Repository.
+On an Arch-based system, you can do, e.g., 
+```shell
+yay -S mplcolors
+```
 
 Alternatively, you may create an alias in your shell's rc file (e.g., `~/.bashrc`) such as 
 ```shell
