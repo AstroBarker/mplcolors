@@ -92,7 +92,16 @@ def PrintColors( colors=mcolors.CSS4_COLORS ):
   names  = [name for hsv, name in by_hsv]
 
   # NOTE: You may edit the number of printed columns here
-  ncols = 3
+  
+  # do some "smart" setting of number of printed columns.
+  # seems to work?
+  cols = get_terminal_size().columns
+  if ( cols >= 31*3 ):
+    ncols = 3
+  elif ( cols >= 31*2 ):
+    ncols = 2
+  else:
+    ncols = 1
 
   for i, name in enumerate(names):
     col = i % ncols
