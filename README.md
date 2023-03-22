@@ -71,3 +71,6 @@ To display all of the built-in colormaps, use the `-b` flag ("b" for "bars") or 
 ```shell
 mplcolors -b
 ```
+
+# TODO
+Some functionality to determine how many columns to print based on temrinal size, namely for the color bars, needs logic updates.

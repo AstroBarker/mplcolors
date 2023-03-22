@@ -16,6 +16,7 @@ https://matplotlib.org/stable/gallery/color/named_colors.html
 for getting color names and values.
 '''
 
+import math
 import argparse
 from collections import OrderedDict
 from os import get_terminal_size
@@ -28,6 +29,7 @@ from matplotlib import cm
 
 __version__ = "1.0.0"
 
+_COL_LENGTH_ = 31 # max column length for printing colors.
 # === Color Print Routines ===
 
 def FormatRGB( rgb ):
@@ -51,7 +53,7 @@ def PrintColor( rgb, name, endline ):
   """
 
   # Set the length of an entry as 25 spaces
-  num_spaces = 31 - 5 - len(name)
+  num_spaces = _COL_LENGTH_ - 5 - len(name)
   print( FormatRGB( rgb ) + "      "
     + "\x1b[0;0m", name, num_spaces*" ", end=endline )
 
@@ -94,14 +96,17 @@ def PrintColors( colors=mcolors.CSS4_COLORS ):
   # NOTE: You may edit the number of printed columns here
   
   # do some "smart" setting of number of printed columns.
-  # seems to work?
+  # below _COL_LENGTH_ is a magic number I determined to be the max length of a col
   cols = get_terminal_size().columns
-  if ( cols >= 31*3 ):
-    ncols = 3
-  elif ( cols >= 31*2 ):
-    ncols = 2
-  else:
-    ncols = 1
+  ncols = math.floor( cols / _COL_LENGTH_ )
+  #if ( cols >= _COL_LENGTH_*4 ):
+  #  ncols = 4
+  #elif ( cols >= _COL_LENGTH_*3 ):
+  #  ncols = 3
+  #elif ( cols >= _COL_LENGTH_*2 ):
+  #  ncols = 2
+  #else:
+  #  ncols = 1
 
   for i, name in enumerate(names):
     col = i % ncols
@@ -133,13 +138,13 @@ def GetColormap( name ):
 def GetStep( cols ):
   """
   Given the size of the terminal window,
-  set the striding for printing colors.
+  set the striding for printing colorbar colors.
   Hacky.
   """
 
-  step = 5
+  step = 8
   if ( cols > 55 ): step = 5
-  if ( cols > 69 ): step = 4
+  if ( cols > 69 ): step = 4 
   if ( cols > 91 ): step = 3
   if ( cols > 136 ): step = 2
 
@@ -165,7 +170,7 @@ def PrintColorbar( name ):
   # Print every nth color. The colorbar is massive if we print all 256
   for i in range(0, 256, step):
     print( FormatRGB(scalar_map.to_rgba(i)[:-1]) + " " + "\033[0;0m",end=""  )
-  print("\n")
+  print( "\n" )
 
 
 def PrintColorbars( cmaps ):
