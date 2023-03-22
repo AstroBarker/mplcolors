@@ -100,14 +100,6 @@ def PrintColors( colors=mcolors.CSS4_COLORS ):
   # below _COL_LENGTH_ is a magic number I determined to be the max length of a col
   cols = get_terminal_size().columns
   ncols = math.floor( cols / _COL_LENGTH_ )
-  #if ( cols >= _COL_LENGTH_*4 ):
-  #  ncols = 4
-  #elif ( cols >= _COL_LENGTH_*3 ):
-  #  ncols = 3
-  #elif ( cols >= _COL_LENGTH_*2 ):
-  #  ncols = 2
-  #else:
-  #  ncols = 1
 
   for i, name in enumerate(names):
     col = i % ncols
