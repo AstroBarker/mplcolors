@@ -73,4 +73,5 @@ mplcolors -b
 ```
 
 # TODO
-Some functionality to determine how many columns to print based on temrinal size, namely for the color bars, needs logic updates.
+ - Some functionality to determine how many columns to print based on temrinal size, namely for the color bars, needs logic updates.
+ - Better order printed colors ( they are "row major," we want "column major" )

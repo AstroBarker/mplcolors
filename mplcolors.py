@@ -99,6 +99,7 @@ def PrintColors( colors=mcolors.CSS4_COLORS ):
   # do some "smart" setting of number of printed columns.
   # below _COL_LENGTH_ is a magic number I determined to be the max length of a col
   cols = get_terminal_size().columns
+  rows = get_terminal_size().lines
   ncols = math.floor( cols / _COL_LENGTH_ )
 
   for i, name in enumerate(names):
