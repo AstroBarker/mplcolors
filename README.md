@@ -43,7 +43,7 @@ alias mplcolors='python /path/to/dir/mplcolors.py'
 ```
 although this will not install the `man` file.
 
-# Usage
+# Usage (shell)
 
 After installation, you may run
 ```shell
@@ -71,6 +71,22 @@ To display all of the built-in colormaps, use the `-b` flag ("b" for "bars") or 
 ```shell
 mplcolors -b
 ```
+
+# Usage (package)
+`mplcolors` can be imported and used as a package to support your plotting needs.
+To enable this, it must be in your `$PYTHONPATH` environment variable.
+Currently, `mplcolors` may support you by finding:
+- RGB color complement (GetComplement)
+- color triads (GetTriad)
+- color tetrads (GetTetrad)
+
+Note that most functions of relevance here will take either an `mpl` color name (e.g., "cornflowerblue") or a hex value. 
+RGB and  HSV values are used internally for manipulation.
+Return types for these functions are always hex values.
+
+# Code Style
+Code linting and formatting is done with [ruff](https://docs.astral.sh/ruff/).
+Rules are listed in [ruff.toml](ruff.toml).
 
 # TODO
  - Some functionality to determine how many columns to print based on temrinal size, namely for the color bars, needs logic updates.

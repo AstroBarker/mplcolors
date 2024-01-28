@@ -1,0 +1,11 @@
+line-length = 80
+indent-width = 2
+
+[format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = 70
+
+[lint]
+ignore = ["E701"]
