@@ -31,7 +31,7 @@ import matplotlib.colors as mcolors
 import matplotlib as mpl
 from matplotlib import cm
 
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 _COL_LENGTH_ = 31  # max column length for printing colors.
 
