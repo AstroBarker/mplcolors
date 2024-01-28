@@ -27,7 +27,8 @@ You just need a Python distribution (3.x) with matplotlib and a true color compa
 # Installation
 ## Direct Installation
 1. Clone this repository `git clone https://github.com/AstroBarker/mplcolors.git`.
-2. Run `make install` inside the script directory.
+2. For the package: run `python -m pip install --user .` 
+3. For the CLI: run `make install` inside the top level directory.
   * __MacOS__ `make PREFIX=/usr/local install`
 
 ## OS Packages
@@ -36,6 +37,7 @@ On an Arch-based system, you can do, e.g.,
 ```shell
 yay -S mplcolors
 ```
+which gives access to the CLI.
 
 Alternatively, you may create an alias in your shell's rc file (e.g., `~/.bashrc`) such as 
 ```shell

@@ -7,7 +7,7 @@ all:
 install:
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin
 	@mkdir -p $(DESTDIR)$(MANDIR)/man1
-	@cp -p mplcolors.py $(DESTDIR)$(PREFIX)/bin/mplcolors
+	@cp -p mplcolors/mplcolors.py $(DESTDIR)$(PREFIX)/bin/mplcolors
 	@cp -p mplcolors.1 $(DESTDIR)$(MANDIR)/man1
 	@chmod 755 $(DESTDIR)$(PREFIX)/bin/mplcolors
 
