@@ -292,6 +292,39 @@ def RGBToHex(rgb):
   """
   return mpl.colors.to_hex(rgb)
 
+def HSVToRGB(hsv):
+  """
+  Convert HSV to RGB
+  Parameter: hsv : tuple
+  returns rgb: tuple(r,g,b)
+  """
+  return mpl.colors.hsv_to_rgb(hsv)
+
+def RGBToHSV(rgb):
+  """
+  Convert RGB to HSV
+  Parameter: rgb : tuple
+  returns hsv: tuple(h,s,v)
+  """
+  return mpl.colors.rgb_to_hsv(rgb)
+
+def HexToHSV(hexval):
+  """
+  Convert hex to hsv
+  Parameter: hex : tuple
+  returns hsv: tuple(h,s,v)
+  """
+  rgb = HexToRGB(hexval)
+  return RGBToHSV(rgb)
+
+def HSVToHEX(hsv):
+  """
+  Convert hsv to hex
+  Parameter: hsv : tuple
+  returns hex: string
+  """
+  rgb = HSVToRGB(hsv)
+  return RGBToHex(rgb)
 
 def main( args ):
   """main function. parse args and call appropriate functions"""
