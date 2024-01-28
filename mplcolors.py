@@ -44,6 +44,7 @@ def ColorAbs( val ):
   """
 
   return val if ( val >= 0.0 ) else 1.0 + val
+# End ColorAbs
 
 def NameToRGB( name ):
   """
@@ -61,6 +62,7 @@ def NameToRGB( name ):
   else:                       # input is mpl color name
     rgb   = mcolors.to_rgb(name)
   return rgb
+# End NameToRGB
 
 # === Calcuation Functions ===
 
@@ -74,7 +76,7 @@ def GetComplement( name ):
   rgb_c = Complement( *rgb )
   hex_c = RGBToHex(rgb_c)
   return hex_c
-
+# End GetComplement
 
 # Based on stackoverflow.com/
 #questions/40233986/python-is-there-a-function-or-formula-to-find-the-complementary-colour-of-a-rgb
@@ -86,7 +88,7 @@ def hilo(a, b, c):
   minval = min( min(a, b), c )
   maxval = max( max(a, b), c )
   return minval + maxval
-
+# End hili
 
 def Complement(r, g, b):
   """
@@ -100,6 +102,7 @@ def Complement(r, g, b):
   """
   k = hilo(r, g, b)
   return tuple(k - u for u in (r, g, b))
+# End Complement
 
 def GetTriad( name ):
   """
@@ -111,7 +114,6 @@ def GetTriad( name ):
   """
   rgb_in = NameToRGB( name )
 
-  num_triad = 3 # number of colors in triad
   out = []
 
   # convert to hsv
@@ -120,8 +122,8 @@ def GetTriad( name ):
   hsv_3 = hsv_in.copy()
 
   # manipulate to get triad
-  h_2 = ColorAbs(hsv_in[0] + (120.0 / 360.0) - 1.0)
-  h_3 = ColorAbs(hsv_in[0] + (240.0 / 360.0) - 1.0)
+  h_2 = ColorAbs( hsv_in[0] + (120.0 / 360.0) - 1.0 )
+  h_3 = ColorAbs( hsv_in[0] + (240.0 / 360.0) - 1.0 )
 
   hsv_2[0] = h_2
   hsv_3[0] = h_3
@@ -132,6 +134,91 @@ def GetTriad( name ):
   out.append( HSVToHex(hsv_3) )
 
   return out
+# End GetTriad
+
+def GetTetrad( name ):
+  """
+  Compute color tetrad. Convert to HSV and manipulate "H" (the zero component)
+  Parameters:
+    name - string. Either mpl color or hex.
+  Returns:
+    triad: list(tuples(hexvalues))
+  """
+  rgb_in = NameToRGB( name )
+
+  out = []
+
+  # convert to hsv
+  hsv_in = RGBToHSV( rgb_in )
+  hsv_2 = hsv_in.copy() # will modify later
+  hsv_3 = hsv_in.copy()
+  hsv_4 = hsv_in.copy()
+
+  # manipulate to get tetrad
+  h_2 = ColorAbs( hsv_in[0] + ( 90.0 / 360 ) - 1.0 )
+  h_3 = ColorAbs( hsv_in[0] + ( 180.0 / 360 ) - 1.0 )
+  h_4 = ColorAbs( hsv_in[0] + ( 270.0 / 360 ) - 1.0 )
+
+  hsv_2[0] = h_2
+  hsv_3[0] = h_3
+  hsv_4[0] = h_4
+
+  # convert all to hex
+  out.append( RGBToHex(rgb_in) )
+  out.append( HSVToHex(hsv_2) )
+  out.append( HSVToHex(hsv_3) )
+  out.append( HSVToHex(hsv_4) )
+
+  return out
+# End GetTetrad
+
+# === Color Print Routines ===
+
+def FormatRGB( rgb ):
+  """
+  Take output of mpl.colors.to_rgb and format for use in print.
+  input is (r, g, b) in decimal form (e.g., values range from 0.0 to 1.0)
+  Output is a string with ANSI escape sequences.
+  """
+
+  rgb = [ round(i*255) for i in rgb  ]
+
+  # ANSI escape sequence mess
+  outstr = "\x1b[48;2;" + str(rgb[0]) + ";" \
+                 + str(rgb[1]) + ";" + str(rgb[2]) + "m"
+  return outstr
+# End FormatRGB
+
+def PrintColor( rgb, name, endline ):
+  """
+  Print output for a single color (rbg, name).
+  endline is a control to send a newline character
+  """
+
+  # Set the length of an entry as 25 spaces
+  num_spaces = _COL_LENGTH_ - 5 - len(name)
+  print( FormatRGB( rgb ) + "      "
+    + "\x1b[0;0m", name, num_spaces*" ", end=endline )
+# End PrintColor
+
+def PrintComplement( name ):
+  """
+  Compute and print complement colors to "name"
+  Parameters:
+      name - string. Either mpl color or hex string.
+  """
+  rgb = NameToRGB( name )
+
+  message = "Finding RGB Complement of " + name
+  print(GetDecoString( message ))
+
+  hex_c = GetComplement( name )
+  rgb_c = HexToRGB( hex_c )
+
+  PrintColor( rgb, name, "\n" )
+  name = "Complement: " + str( hex_c ) 
+  PrintColor( rgb_c, name, "\n" )
+# End PrintComplement
 
 def PrintTriad( name ):
   """
@@ -153,60 +240,35 @@ def PrintTriad( name ):
   for i in range(1,3):
     name = str( triad[i] ) 
     PrintColor( rgb_triad[i], name, "\n" )
+# End PrintTriad
 
-# === Color Print Routines ===
-
-def FormatRGB( rgb ):
+def PrintTetrad( name ):
   """
-  Take output of mpl.colors.to_rgb and format for use in print.
-  input is (r, g, b) in decimal form (e.g., values range from 0.0 to 1.0)
-  Output is a string with ANSI escape sequences.
-  """
-
-  rgb = [ round(i*255) for i in rgb  ]
-
-  # ANSI escape sequence mess
-  outstr = "\x1b[48;2;" + str(rgb[0]) + ";" \
-                 + str(rgb[1]) + ";" + str(rgb[2]) + "m"
-  return outstr
-
-
-def PrintColor( rgb, name, endline ):
-  """
-  Print output for a single color (rbg, name).
-  endline is a control to send a newline character
-  """
-
-  # Set the length of an entry as 25 spaces
-  num_spaces = _COL_LENGTH_ - 5 - len(name)
-  print( FormatRGB( rgb ) + "      "
-    + "\x1b[0;0m", name, num_spaces*" ", end=endline )
-
-
-def PrintComplement( name ):
-  """
-  Compute and print complement colors to "name"
+  Print color tetrad
   Parameters:
-      name - string. Either mpl color or hex string.
+    name - string. Either mpl color or hex.
   """
-  rgb = NameToRGB( name )
+  rgb_in = NameToRGB( name )
 
-  message = "Finding RGB Complement of " + name
+  message = "Finding RGB Tetrad of " + name
   print(GetDecoString( message ))
 
-  hex_c = GetComplement( name )
-  rgb_c = HexToRGB( hex_c )
+  tetrad = GetTetrad( name )
+  rgb_tetrad = []
+  for i in range(4):
+    rgb_tetrad.append( HexToRGB( tetrad[i] ) )
 
-  PrintColor( rgb, name, "\n" )
-  name = "Complement: " + str( hex_c ) 
-  PrintColor( rgb_c, name, "\n" )
-
+  PrintColor( rgb_tetrad[0], name, "\n" )
+  for i in range(1,4):
+    name = str( tetrad[i] ) 
+    PrintColor( rgb_tetrad[i], name, "\n" )
+# End PrintTetrad    
 
 def GetSortedHsvColors( colors ):
   """return sorted colors by hsv. check mpl documentation for more."""
   return sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgb(color))),
                 name) for name, color in colors.items())
-
+# End GetSortedHsvColors
 
 def PrintColors( colors=mcolors.CSS4_COLORS ):
   """
@@ -233,6 +295,7 @@ def PrintColors( colors=mcolors.CSS4_COLORS ):
       PrintColor( mcolors.to_rgb(name), name, "\n"  )
     else:
       PrintColor( mcolors.to_rgb(name), name, " "  )
+# End PrintColors
 
 # === Colorbar Routines ===
 
@@ -249,7 +312,7 @@ def GetColormap( name ):
   scalar_map = cm.ScalarMappable(norm=norm, cmap=name)
 
   return scalar_map
-
+# End GetColormap
 
 def GetStep( cols ):
   """
@@ -265,7 +328,7 @@ def GetStep( cols ):
   if ( cols > 136 ): step = 2
 
   return step
-
+# End GetStep
 
 def PrintColorbar( name ):
   """
@@ -287,7 +350,7 @@ def PrintColorbar( name ):
   for i in range(0, 256, step):
     print( FormatRGB(scalar_map.to_rgba(i)[:-1]) + " " + "\033[0;0m",end=""  )
   print( "\n" )
-
+# End PrintColorbar
 
 def PrintColorbars( cmaps ):
   """
@@ -306,6 +369,7 @@ def PrintColorbars( cmaps ):
     print("\n")
     for cmap in cmap_list:
       PrintColorbar( cmap )
+# End PrintColorbars
 
 # === Search Routines ===
 
@@ -319,7 +383,7 @@ def GetDecoString(message):
   line = str((len(message)+1) * "=").center(size)
 
   return line + "\n" + message.center(size) + "\n" + line + "\n"
-
+# End GetDecoString
 
 def GetNearNameColors( target, colors, least_score = 0.5 ):
   """
@@ -340,7 +404,7 @@ def GetNearNameColors( target, colors, least_score = 0.5 ):
       near_name_colors[name] = color
 
   return near_name_colors
-
+# End GetNearNameColors
 
 def SearchColors( target, colors = mcolors.CSS4_COLORS ):
   """
@@ -364,7 +428,7 @@ def SearchColors( target, colors = mcolors.CSS4_COLORS ):
 
   else:
     PrintColors( match_colors )
-
+# End SearchColors
 
 # === Conversion Routines ===
 
@@ -377,7 +441,7 @@ def HexToRGB( hexval ): # Unused Currently.
   if ( hexval[0] != "#" ):
     hexval = "#" + hexval
   return mpl.colors.to_rgb(hexval)
-
+# End HexToRGB
 
 def RGBToHex(rgb):
   """
@@ -386,6 +450,7 @@ def RGBToHex(rgb):
   returns hex: string, inclding "#"
   """
   return mpl.colors.to_hex(rgb)
+# End RGBToHex
 
 def HSVToRGB(hsv):
   """
@@ -394,6 +459,7 @@ def HSVToRGB(hsv):
   returns rgb: tuple(r,g,b)
   """
   return mpl.colors.hsv_to_rgb(hsv)
+# End HSVToRGB
 
 def RGBToHSV(rgb):
   """
@@ -402,6 +468,7 @@ def RGBToHSV(rgb):
   returns hsv: tuple(h,s,v)
   """
   return mpl.colors.rgb_to_hsv(rgb)
+# End TGBToHSV
 
 def HexToHSV(hexval):
   """
@@ -411,6 +478,7 @@ def HexToHSV(hexval):
   """
   rgb = HexToRGB(hexval)
   return RGBToHSV(rgb)
+# End HexToHSV
 
 def HSVToHex(hsv):
   """
@@ -420,6 +488,7 @@ def HSVToHex(hsv):
   """
   rgb = HSVToRGB(hsv)
   return RGBToHex(rgb)
+# End HSVToHex
 
 def main( args ):
   """main function. parse args and call appropriate functions"""
@@ -438,7 +507,7 @@ def main( args ):
 
     SearchColors( args.search, colors=colors)
 
-  elif ( args.colorbars is False and args.all is False and args.complement is None and args.triad is None ):
+  elif ( args.colorbars is False and args.all is False and args.complement is None and args.triad is None and args.tetrad is None ):
     PrintColors()
   elif ( args.colorbars is False and args.all is True ):
     color_dict = mcolors.XKCD_COLORS
@@ -452,6 +521,9 @@ def main( args ):
   elif ( args.triad is not None ):
     name = args.triad
     PrintTriad( name )
+  elif ( args.tetrad is not None ):
+    name = args.tetrad
+    PrintTetrad( name )
   else:
     cmaps = OrderedDict()
 
@@ -488,7 +560,7 @@ def main( args ):
 
     PrintColorbars(cmaps)
   return 0
-
+# End main
 
 if __name__ == "__main__":
 
@@ -507,6 +579,10 @@ if __name__ == "__main__":
     default=None)
   parser.add_argument( "-t", "--triad",
     help="Return the RGB color triad. \
+    Input either matplotlib color name or Hex as string, e.g., violet.",
+    default=None)
+  parser.add_argument( "-r", "--tetrad",
+    help="Return the RGB color tetrad. \
     Input either matplotlib color name or Hex as string, e.g., violet.",
     default=None)
 
