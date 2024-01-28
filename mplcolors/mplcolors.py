@@ -656,6 +656,7 @@ def main(args):
     and args.complement is None
     and args.triad is None
     and args.tetrad is None
+    and args.split is None
   ):
     PrintColors()
   elif args.colorbars is False and args.all is True:
@@ -673,6 +674,9 @@ def main(args):
   elif args.tetrad is not None:
     name = args.tetrad
     PrintTetrad(name)
+  elif args.split is not None:
+    name = args.split
+    PrintSplitComplement(name)
   else:
     cmaps = OrderedDict()
 
@@ -815,6 +819,13 @@ if __name__ == "__main__":
     "-r",
     "--tetrad",
     help="Return the RGB color tetrad. \
+    Input either matplotlib color name or Hex as string, e.g., violet.",
+    default=None,
+  )
+  parser.add_argument(
+    "-sc",
+    "--split",
+    help="Return the RGB split color complement. \
     Input either matplotlib color name or Hex as string, e.g., violet.",
     default=None,
   )
