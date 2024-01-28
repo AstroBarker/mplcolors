@@ -88,6 +88,14 @@ Currently, `mplcolors` may support you by finding:
 - RGB color complement (GetComplement)
 - color triads (GetTriad)
 - color tetrads (GetTetrad)
+- color split complement(GetSplitComplement)
+
+Once installed, simply
+```python
+from mplcolors import mplcolors
+my_color = "teal
+triad = mplcolors.GetTriad(my_color)
+```
 
 Note that most functions of relevance here will take either an `mpl` color name (e.g., "cornflowerblue") or a hex value. 
 RGB and  HSV values are used internally for manipulation.
