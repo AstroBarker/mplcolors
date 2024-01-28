@@ -74,6 +74,13 @@ To display all of the built-in colormaps, use the `-b` flag ("b" for "bars") or 
 mplcolors -b
 ```
 
+You can display color triads, tetrads, and split complements
+```shell
+mplcolors -t teal # or --triad
+mplcolors -r teal # or --tetrad
+mplcolors -sc teal # or --split
+```
+
 # Usage (package)
 `mplcolors` can be imported and used as a package to support your plotting needs.
 To enable this, it must be in your `$PYTHONPATH` environment variable.
