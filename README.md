@@ -93,7 +93,7 @@ Currently, `mplcolors` may support you by finding:
 Once installed, simply
 ```python
 from mplcolors import mplcolors
-my_color = "teal
+my_color = "teal"
 triad = mplcolors.GetTriad(my_color)
 ```
 
