@@ -47,6 +47,23 @@ def FormatRGB( rgb ):
                  + str(rgb[1]) + ";" + str(rgb[2]) + "m"
   return outstr
 
+def NameToRGB( name ):
+  """
+  General purpose conversion to RGB
+  Parameters:
+    name - string. Either mpl color or hex
+  Returns:
+    rgb: tuple
+  """
+  if ( name[0].isnumeric() ): # no # in string
+    name = "#" + name
+    rgb = HexToRGB( name )
+  elif ( name[0] == "#" ):    # yes # in string
+    rgb = HexToRGB( name )
+  else:                       # input is mpl color name
+    rgb   = mcolors.to_rgb(name)
+  return rgb
+
 def PrintColor( rgb, name, endline ):
   """
   Print output for a single color (rbg, name).
@@ -58,6 +75,16 @@ def PrintColor( rgb, name, endline ):
   print( FormatRGB( rgb ) + "      "
     + "\x1b[0;0m", name, num_spaces*" ", end=endline )
 
+def GetComplement( name ):
+  """
+  Compute color complement to "name"
+  Parameters:
+    name - string. Either mpl color or hex string
+  """
+  rgb = NameToRGB( name )
+  rgb_c = Complement( *rgb )
+  hex_c = RGBToHex(rgb_c)
+  return hex_c
 
 def PrintComplement( name ):
   """
@@ -65,18 +92,16 @@ def PrintComplement( name ):
   Parameters:
       name - string. Either mpl color or hex string.
   """
-  if ( name[0] == "#" or name[0].isnumeric() ):
-    name = "#" + name
-    rgb = HexToRGB( name )
-  else:
-    rgb   = mcolors.to_rgb(name)
-  rgb_c = Complement( *rgb )
+  rgb = NameToRGB( name )
 
   message = "Finding RGB Complement of " + name
   print(GetDecoString( message ))
 
+  hex_c = GetComplement( name )
+  rgb_c = HexToRGB( hex_c )
+
   PrintColor( rgb, name, "\n" )
-  name = "Complement: " + str( RGBToHex(rgb_c) )
+  name = "Complement: " + str( hex_c ) 
   PrintColor( rgb_c, name, "\n" )
 
 
