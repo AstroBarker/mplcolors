@@ -43,7 +43,7 @@ alias mplcolors='python /path/to/dir/mplcolors.py'
 ```
 although this will not install the `man` file.
 
-# Usage (shell)
+# Usage (CLI)
 
 After installation, you may run
 ```shell
