@@ -8,12 +8,16 @@
 '  '  `-|`-' `-`-'`-' `-`-' '   `--'
         |
         '
-Author: Brandon Barker
+Author: Brandon L. Barker
+https://astrobarker.github.io
+https://github.com/AstroBarker
 
 Print matplotlib colors to standard output.
 Some inspiration taken from Matplotlib documentation
 https://matplotlib.org/stable/gallery/color/named_colors.html
 for getting color names and values.
+
+Also usable as a package.
 '''
 
 import math
@@ -31,21 +35,15 @@ __version__ = "1.0.2"
 
 _COL_LENGTH_ = 31 # max column length for printing colors.
 
-# === Color Print Routines ===
+# === Helper Functions ===
 
-def FormatRGB( rgb ):
+def ColorAbs( val ):
   """
-  Take output of mpl.colors.to_rgb and format for use in print.
-  input is (r, g, b) in decimal form (e.g., values range from 0.0 to 1.0)
-  Output is a string with ANSI escape sequences.
+  an "absolute value" on the color wheel for H values.
+  e.g., for negative numbers, return 360 - H
   """
 
-  rgb = [ round(i*255) for i in rgb  ]
-
-  # ANSI escape sequence mess
-  outstr = "\x1b[48;2;" + str(rgb[0]) + ";" \
-                 + str(rgb[1]) + ";" + str(rgb[2]) + "m"
-  return outstr
+  return val if ( val >= 0.0 ) else 1.0 + val
 
 def NameToRGB( name ):
   """
@@ -64,16 +62,7 @@ def NameToRGB( name ):
     rgb   = mcolors.to_rgb(name)
   return rgb
 
-def PrintColor( rgb, name, endline ):
-  """
-  Print output for a single color (rbg, name).
-  endline is a control to send a newline character
-  """
-
-  # Set the length of an entry as 25 spaces
-  num_spaces = _COL_LENGTH_ - 5 - len(name)
-  print( FormatRGB( rgb ) + "      "
-    + "\x1b[0;0m", name, num_spaces*" ", end=endline )
+# === Calcuation Functions ===
 
 def GetComplement( name ):
   """
@@ -85,6 +74,114 @@ def GetComplement( name ):
   rgb_c = Complement( *rgb )
   hex_c = RGBToHex(rgb_c)
   return hex_c
+
+
+# Based on stackoverflow.com/
+#questions/40233986/python-is-there-a-function-or-formula-to-find-the-complementary-colour-of-a-rgb
+def hilo(a, b, c):
+  """
+  min + max of (a, b, c). used for complement.
+  """
+
+  minval = min( min(a, b), c )
+  maxval = max( max(a, b), c )
+  return minval + maxval
+
+
+def Complement(r, g, b):
+  """
+  Given (r, g, b) compute the complement color.
+  Note: this is based on RGB color theory. For example,
+  Red and green are not complements in this theory.
+  Maybe good, maybe bad, but color theory is hard
+  (and having colorblind-unfriendly complements is bad in my opinion).
+
+  returns: tuple(r,g,b)
+  """
+  k = hilo(r, g, b)
+  return tuple(k - u for u in (r, g, b))
+
+def GetTriad( name ):
+  """
+  Compute color triad. Convert to HSV and manipulate "H" (the zero component)
+  Parameters:
+    name - string. Either mpl color or hex.
+  Returns:
+    triad: list(tuples(hexvalues))
+  """
+  rgb_in = NameToRGB( name )
+
+  num_triad = 3 # number of colors in triad
+  out = []
+
+  # convert to hsv
+  hsv_in = RGBToHSV( rgb_in )
+  hsv_2 = hsv_in.copy() # will modify later
+  hsv_3 = hsv_in.copy()
+
+  # manipulate to get triad
+  h_2 = ColorAbs(hsv_in[0] + (120.0 / 360.0) - 1.0)
+  h_3 = ColorAbs(hsv_in[0] + (240.0 / 360.0) - 1.0)
+
+  hsv_2[0] = h_2
+  hsv_3[0] = h_3
+
+  # convert all to hex
+  out.append( RGBToHex(rgb_in) )
+  out.append( HSVToHex(hsv_2) )
+  out.append( HSVToHex(hsv_3) )
+
+  return out
+
+def PrintTriad( name ):
+  """
+  Print color triad
+  Parameters:
+    name - string. Either mpl color or hex.
+  """
+  rgb_in = NameToRGB( name )
+
+  message = "Finding RGB Triad of " + name
+  print(GetDecoString( message ))
+
+  triad = GetTriad( name )
+  rgb_triad = []
+  for i in range(3):
+    rgb_triad.append( HexToRGB( triad[i] ) )
+
+  PrintColor( rgb_triad[0], name, "\n" )
+  for i in range(1,3):
+    name = str( triad[i] ) 
+    PrintColor( rgb_triad[i], name, "\n" )
+
+# === Color Print Routines ===
+
+def FormatRGB( rgb ):
+  """
+  Take output of mpl.colors.to_rgb and format for use in print.
+  input is (r, g, b) in decimal form (e.g., values range from 0.0 to 1.0)
+  Output is a string with ANSI escape sequences.
+  """
+
+  rgb = [ round(i*255) for i in rgb  ]
+
+  # ANSI escape sequence mess
+  outstr = "\x1b[48;2;" + str(rgb[0]) + ";" \
+                 + str(rgb[1]) + ";" + str(rgb[2]) + "m"
+  return outstr
+
+
+def PrintColor( rgb, name, endline ):
+  """
+  Print output for a single color (rbg, name).
+  endline is a control to send a newline character
+  """
+
+  # Set the length of an entry as 25 spaces
+  num_spaces = _COL_LENGTH_ - 5 - len(name)
+  print( FormatRGB( rgb ) + "      "
+    + "\x1b[0;0m", name, num_spaces*" ", end=endline )
+
 
 def PrintComplement( name ):
   """
@@ -210,33 +307,6 @@ def PrintColorbars( cmaps ):
     for cmap in cmap_list:
       PrintColorbar( cmap )
 
-# === Complement Color Functions ===
-
-# Based on stackoverflow.com/
-#questions/40233986/python-is-there-a-function-or-formula-to-find-the-complementary-colour-of-a-rgb
-def hilo(a, b, c):
-  """
-  min + max of (a, b, c)
-  """
-
-  minval = min( min(a, b), c )
-  maxval = max( max(a, b), c )
-  return minval + maxval
-
-
-def Complement(r, g, b):
-  """
-  Given (r, g, b) compute the complement color.
-  Note: this is based on RGB color theory. For example,
-  Red and green are not complements in this theory.
-  Maybe good, maybe bad, but color theory is hard
-  (and having colorblind-unfriendly complements is bad in my opinion).
-
-  returns: tuple(r,g,b)
-  """
-  k = hilo(r, g, b)
-  return tuple(k - u for u in (r, g, b))
-
 # === Search Routines ===
 
 def GetDecoString(message):
@@ -342,7 +412,7 @@ def HexToHSV(hexval):
   rgb = HexToRGB(hexval)
   return RGBToHSV(rgb)
 
-def HSVToHEX(hsv):
+def HSVToHex(hsv):
   """
   Convert hsv to hex
   Parameter: hsv : tuple
@@ -368,7 +438,7 @@ def main( args ):
 
     SearchColors( args.search, colors=colors)
 
-  elif ( args.colorbars is False and args.all is False and args.complement is None ):
+  elif ( args.colorbars is False and args.all is False and args.complement is None and args.triad is None ):
     PrintColors()
   elif ( args.colorbars is False and args.all is True ):
     color_dict = mcolors.XKCD_COLORS
@@ -379,6 +449,9 @@ def main( args ):
   elif ( args.complement is not None ):
     name = args.complement
     PrintComplement( name )
+  elif ( args.triad is not None ):
+    name = args.triad
+    PrintTriad( name )
   else:
     cmaps = OrderedDict()
 
@@ -432,10 +505,14 @@ if __name__ == "__main__":
     help="Return the RGB color complement. \
     Input either matplotlib color name or Hex as string, e.g., violet.",
     default=None)
+  parser.add_argument( "-t", "--triad",
+    help="Return the RGB color triad. \
+    Input either matplotlib color name or Hex as string, e.g., violet.",
+    default=None)
 
   parser.add_argument( "-v", "--version", help="Print version number.",
     action="store_true" )
 
   myargs = parser.parse_args()
 
-  main( myargs  )
+  main( myargs )
