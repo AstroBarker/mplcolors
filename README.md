@@ -107,5 +107,6 @@ Code linting and formatting is done with [ruff](https://docs.astral.sh/ruff/).
 Rules are listed in [ruff.toml](ruff.toml).
 
 # TODO
+ - Invert color
  - Some functionality to determine how many columns to print based on temrinal size, namely for the color bars, needs logic updates.
  - Better order printed colors ( they are "row major," we want "column major" )
