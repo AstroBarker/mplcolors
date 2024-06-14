@@ -23,7 +23,7 @@ Also usable as a package.
 import math
 import argparse
 from collections import OrderedDict
-from os import get_terminal_size
+import os
 import difflib
 
 # import matplotlib.pyplot as plt
@@ -31,7 +31,7 @@ import matplotlib.colors as mcolors
 import matplotlib as mpl
 from matplotlib import cm
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 _COL_LENGTH_ = 31  # max column length for printing colors.
 
@@ -380,9 +380,9 @@ def PrintColors(colors=mcolors.CSS4_COLORS):
 
   # do some "smart" setting of number of printed columns.
   # below _COL_LENGTH_ is a magic number I determined to be the max length of a col
-  cols = get_terminal_size().columns
-  # rows = get_terminal_size().lines
-  ncols = math.floor(cols / _COL_LENGTH_)
+  cols = os.get_terminal_size().columns
+  # rows = os.get_terminal_size().lines
+  ncols = math.floor(cols / _COL_LENGTH_) - 1
 
   for i, name in enumerate(names):
     col = i % ncols
@@ -392,7 +392,7 @@ def PrintColors(colors=mcolors.CSS4_COLORS):
     if col == ncols - 1:
       PrintColor(mcolors.to_rgb(name), name, "\n")
     else:
-      PrintColor(mcolors.to_rgb(name), name, " ")
+      PrintColor(mcolors.to_rgb(name), name, "")
 
 
 # End PrintColors
@@ -453,7 +453,7 @@ def PrintColorbar(name):
 
   # get the length of the terminal window.
   # used for adjusting amount of colors printed
-  cols = get_terminal_size().columns
+  cols = os.get_terminal_size().columns
 
   step = GetStep(cols)
 
@@ -472,7 +472,7 @@ def PrintColorbars(cmaps):
   """
 
   for cmap_category, cmap_list in cmaps.items():
-    cols = get_terminal_size().columns
+    cols = os.get_terminal_size().columns
     size = int((256 + 17) / GetStep(cols) - 1)
 
     title = " = " + cmap_category + " = "
@@ -494,7 +494,7 @@ def GetDecoString(message):
   Decorative string, mainly for search functions.
   """
   message = " = " + message + " = "
-  size = get_terminal_size().columns
+  size = os.get_terminal_size().columns
 
   line = str((len(message) + 1) * "=").center(size)
 
@@ -638,7 +638,7 @@ def main(args):
 
   if args.version:
     print(f"mplcolors {__version__}\n")
-    return 0
+    return os.EX_OK
 
   if args.colorbars is False and args.search:
     colors = mcolors.CSS4_COLORS
@@ -779,7 +779,7 @@ def main(args):
     ]
 
     PrintColorbars(cmaps)
-  return 0
+  return os.EX_OK
 
 
 # End main
