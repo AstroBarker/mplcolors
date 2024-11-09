@@ -33,7 +33,7 @@ from matplotlib import cm
 
 __version__ = "1.1.1"
 
-_COL_LENGTH_ = 31  # max column length for printing colors.
+_COL_LENGTH_ = 32  # max column length for printing colors.
 
 # === Helper Functions ===
 
