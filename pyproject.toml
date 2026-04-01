@@ -1,0 +1,17 @@
+[project]
+name = "mplcolors"
+version = "1.1.2"
+description = "A Python 3.x CLI for matplotlib color and colormap exploration."
+readme = "README.md"
+authors = [
+    { name = "Brandon Barker", email = "bbarker.py@proton.me" }
+]
+requires-python = ">=3.10"
+dependencies = ["matplotlib"]
+
+[project.scripts]
+mplcolors = "mplcolors.mplcolors:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

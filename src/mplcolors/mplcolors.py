@@ -31,7 +31,7 @@ import matplotlib.colors as mcolors
 import matplotlib as mpl
 from matplotlib import cm
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 _COL_LENGTH_ = 32  # max column length for printing colors.
 
@@ -393,6 +393,7 @@ def PrintColors(colors=mcolors.CSS4_COLORS):
       PrintColor(mcolors.to_rgb(name), name, "\n")
     else:
       PrintColor(mcolors.to_rgb(name), name, "")
+  print("\n")
 
 
 # End PrintColors
@@ -633,7 +634,7 @@ def HSVToHex(hsv):
 # End HSVToHex
 
 
-def main(args):
+def driver(args):
   """main function. parse args and call appropriate functions"""
 
   if args.version:
@@ -784,7 +785,8 @@ def main(args):
 
 # End main
 
-if __name__ == "__main__":
+
+def main():
   # parse any arg
   DESC = "mplcolors - CLI tool for displaying matplotlib colors"
   parser = argparse.ArgumentParser(description=DESC)
@@ -825,4 +827,8 @@ if __name__ == "__main__":
 
   myargs = parser.parse_args()
 
-  main(myargs)
+  driver(myargs)
+
+
+if __name__ == "__main__":
+  exit(main())
